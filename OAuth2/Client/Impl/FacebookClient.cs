@@ -81,7 +81,7 @@ namespace OAuth2.Client.Impl
         protected override UserInfo ParseUserInfo(string content)
         {
             var response = JObject.Parse(content);
-            const string avatarUriTemplate = "{0}?type={1}";
+            const string avatarUriTemplate = "http://graph.facebook.com/{0}/picture/?type={1}";
             var avatarUri = response["picture"]["data"]["url"].Value<string>();
             return new UserInfo
             {
@@ -91,9 +91,16 @@ namespace OAuth2.Client.Impl
                 Email = response["email"].SafeGet(x => x.Value<string>()),
                 AvatarUri =
                 {
-                    Small = !string.IsNullOrWhiteSpace(avatarUri) ? string.Format(avatarUriTemplate, avatarUri, "small") : string.Empty,
-                    Normal = !string.IsNullOrWhiteSpace(avatarUri) ? string.Format(avatarUriTemplate, avatarUri, "normal") : string.Empty,
-                    Large = !string.IsNullOrWhiteSpace(avatarUri) ? string.Format(avatarUriTemplate, avatarUri, "large") : string.Empty
+                    //Eric - As imagens do facebook que estão vindo do OAth não estão carregando
+                    // visto no site abaixo uma solução: Um template de url que se passa o id do usuário
+                    // https://forums.meteor.com/t/solved-meteor-loginwithfacebook-custom-image-size/45557
+                    Small = string.Format(avatarUriTemplate,  response["id"].Value<string>(), "small"),
+                    Normal = string.Format(avatarUriTemplate,  response["id"].Value<string>(), "normal"),
+                    Large = string.Format(avatarUriTemplate,  response["id"].Value<string>(), "large")
+
+                    //Small = !string.IsNullOrWhiteSpace(avatarUri) ? string.Format(avatarUriTemplate, avatarUri, "small") : string.Empty,
+                    //Normal = !string.IsNullOrWhiteSpace(avatarUri) ? string.Format(avatarUriTemplate, avatarUri, "normal") : string.Empty,
+                    //Large = !string.IsNullOrWhiteSpace(avatarUri) ? string.Format(avatarUriTemplate, avatarUri, "large") : string.Empty
                 }
             };
         }
